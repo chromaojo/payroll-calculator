@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nigerian Salary Tax Calculator</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="container mt-4">
+        <h2 class="text-center p-4">Nigerian Salary Tax Calculator <br></h2>
+
+    </div>
+    <div class="container mt-5">
+        <h2 class="text-center mt-3">
+            <a href="./index.html" class="btn btn-primary mx-3">
+                Tax with NHF
+            </a>
+            <a href="./next.html" class="btn btn-outline-primary mx-3">
+                Tax without NHF
+            </a>
+        </h2>
+
+        <div class="row p-4">
+            <div class="col-6 card p-4 mt-3">
+                <h4>
+                    Nigerian Tax Policy Considerations
+                </h4>
+                <b>Personal Income Tax (PAYE) Rates:</b>
+                <ol>
+                    <li>First ₦300,000 → 7%</li>
+                    <li>Next ₦300,000 → 11%</li>
+                    <li>Next ₦500,000 → 15%</li>
+                    <li>Next ₦500,000 → 19%</li>
+                    <li>Next ₦1,600,000 → 21%</li>
+                    <li>Above ₦3,200,000 → 24%</li>
+                </ol>
+            </div>
+            <div class="col"></div>
+            <div class="col-5 card p-4 mt-3">
+
+                <h4>
+                    Nigerian Tax Policy Considerations
+                </h4>
+                <b>Pension Contribution:</b>
+                <ul>
+                    <li>8% of Gross Salary</li>
+                </ul>
+                <b>NHF (National Housing Fund):</b>
+                <ul>
+                    <li>2.5% of Basic Salary</li>
+                </ul>
+            </div>
+        </div> <br>
+        <div class="card p-4">
+            <form id="salaryForm">
+                <!-- Staff Name -->
+                <div class="mb-3">
+                    <label for="staffName" class="form-label">Staff Name</label>
+                    <input type="text" class="form-control" id="staffName" required>
+                </div>
+
+                <!-- Salary Input -->
+                <div class="mb-3">
+                    <label for="salaryAmount" class="form-label">Gross Monthly Salary (₦)</label>
+                    <input type="number" class="form-control" id="salaryAmount" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Calculate</button>
+            </form>
+        </div>
+
+        <div class="card mt-4 p-4 d-none" id="resultCard">
+            <h4 class="text-center">Salary Breakdown</h4>
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Staff Name:</strong> <span id="resName"></span></li>
+                <li class="list-group-item"><strong>Gross Salary:</strong> ₦<span id="resGross"></span></li>
+                <li class="list-group-item"><strong>Pension Deduction (8%):</strong> ₦<span id="resPension"></span></li>
+                <li class="list-group-item"><strong>NHF Deduction (2.5%):</strong> ₦<span id="resNHF"></span></li>
+                <li class="list-group-item"><strong>Tax Payable (PAYE):</strong> ₦<span id="resTax"></span></li>
+                <li class="list-group-item"><strong>Net Salary:</strong> ₦<span id="resNet"></span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById("salaryForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById("staffName").value;
+            const grossSalary = parseFloat(document.getElementById("salaryAmount").value);
+
+            if (isNaN(grossSalary) || grossSalary <= 0) {
+                alert("Please enter a valid salary amount.");
+                return;
+            }
+
+            // Deductions
+            const pension = 0.08 * grossSalary; // 8% Pension
+            const nhf = 0.025 * grossSalary; // 2.5% NHF
+            const taxableIncome = grossSalary - (pension + nhf);
+
+            // PAYE Tax Calculation (Simplified Nigerian Tax Bands)
+            function calculateTax(income) {
+                let tax = 0;
+                let remainingIncome = income;
+
+                const taxBrackets = [
+                    { limit: 300000, rate: 0.07 },
+                    { limit: 300000, rate: 0.11 },
+                    { limit: 500000, rate: 0.15 },
+                    { limit: 500000, rate: 0.19 },
+                    { limit: 1600000, rate: 0.21 },
+                    { limit: Infinity, rate: 0.24 },
+                ];
+
+                for (let bracket of taxBrackets) {
+                    if (remainingIncome <= 0) break;
+                    const taxableAmount = Math.min(remainingIncome, bracket.limit);
+                    tax += taxableAmount * bracket.rate;
+                    remainingIncome -= taxableAmount;
+                }
+
+                return tax / 12; // Convert to monthly tax
+            }
+
+            const monthlyTax = calculateTax(taxableIncome * 12); // Convert annual tax to monthly
+            const netSalary = grossSalary - (pension + nhf + monthlyTax);
+
+            // Display Results
+            document.getElementById("resName").innerText = name;
+            document.getElementById("resGross").innerText = grossSalary.toFixed(2);
+            document.getElementById("resPension").innerText = pension.toFixed(2);
+            document.getElementById("resNHF").innerText = nhf.toFixed(2);
+            document.getElementById("resTax").innerText = monthlyTax.toFixed(2);
+            document.getElementById("resNet").innerText = netSalary.toFixed(2);
+
+            document.getElementById("resultCard").classList.remove("d-none");
+        });
+    </script>
+</body>
+
+</html>
